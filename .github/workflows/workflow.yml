@@ -1,0 +1,26 @@
+name: Coverage
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup dart environment
+        uses: dart-lang/setup-dart@v1
+
+      - name: Get dependencies
+        run: dart pub get
+
+      - name: Activate coverage package
+        run: dart pub global activate coverage
+
+      - name: Run tests
+        run: dart pub global run coverage:test_with_coverage
+
+      - name: Running coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: coverage/lcov.info
