@@ -26,10 +26,12 @@ void main() {
       var seed = base64Decode(testData["seed"]);
       var message = base64Decode(testData["message"]);
 
-      var (_, sk) = dilithium2.generateKeys(seed);
+      var (pk, sk) = dilithium2.generateKeys(seed);
       var sig = dilithium2.sign(sk, message);
-
       expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium2.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
     });
   });
 
@@ -53,10 +55,12 @@ void main() {
       var seed = base64Decode(testData["seed"]);
       var message = base64Decode(testData["message"]);
 
-      var (_, sk) = dilithium3.generateKeys(seed);
+      var (pk, sk) = dilithium3.generateKeys(seed);
       var sig = dilithium3.sign(sk, message);
-
       expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium3.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
     });
   });
 
@@ -80,10 +84,12 @@ void main() {
       var seed = base64Decode(testData["seed"]);
       var message = base64Decode(testData["message"]);
 
-      var (_, sk) = dilithium5.generateKeys(seed);
+      var (pk, sk) = dilithium5.generateKeys(seed);
       var sig = dilithium5.sign(sk, message);
-
       expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium5.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
     });
   });
 }
