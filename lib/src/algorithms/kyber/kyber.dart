@@ -25,22 +25,24 @@ class Kyber {
     required this.innerPKE
   });
 
-  factory Kyber.custom({
-    required int n,
-    required int k,
-    required int q,
-    required int eta_1,
-    required int eta_2,
-    required int du,
-    required int dv
-  }) {
-    return Kyber(
-        n: n, k: k, q: q,
-        innerPKE: KyberPKE(
-            n: n, k: k, q: q, eta1: eta_1, eta2: eta_2, du: du, dv: dv
-        )
-    );
-  }
+  // WIP
+  //
+  // factory Kyber.custom({
+  //   required int n,
+  //   required int k,
+  //   required int q,
+  //   required int eta_1,
+  //   required int eta_2,
+  //   required int du,
+  //   required int dv
+  // }) {
+  //   return Kyber(
+  //       n: n, k: k, q: q,
+  //       innerPKE: KyberPKE(
+  //           n: n, k: k, q: q, eta1: eta_1, eta2: eta_2, du: du, dv: dv
+  //       )
+  //   );
+  // }
 
   factory Kyber.kem512() {
     return Kyber(
