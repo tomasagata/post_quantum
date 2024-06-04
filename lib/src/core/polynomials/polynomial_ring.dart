@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:crystals_pqc/src/core/bit_packing/bit_packing_helper.dart';
-import 'package:crystals_pqc/src/core/ntt/ntt_helper.dart';
+import 'package:post_quantum/src/core/bit_packing/bit_packing_helper.dart';
+import 'package:post_quantum/src/core/ntt/ntt_helper.dart';
 
 enum Modulus { regular, centered }
 

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:crystals_pqc/src/core/ntt/ntt_helper_dilithium.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring_matrix.dart';
+import 'package:post_quantum/src/core/ntt/ntt_helper_dilithium.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
 class DilithiumSignature {
   Uint8List cTilde;

@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:crystals_pqc/src/algorithms/dilithium/abstractions/dilithium_private_key.dart';
-import 'package:crystals_pqc/src/algorithms/dilithium/abstractions/dilithium_public_key.dart';
-import 'package:crystals_pqc/src/algorithms/dilithium/abstractions/dilithium_signature.dart';
-import 'package:crystals_pqc/src/algorithms/dilithium/generators/dilithium_key_generator.dart';
-import 'package:crystals_pqc/src/core/factories/polynomial_factory.dart';
-import 'package:crystals_pqc/src/core/ntt/ntt_helper_dilithium.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring_matrix.dart';
+import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_private_key.dart';
+import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_public_key.dart';
+import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_signature.dart';
+import 'package:post_quantum/src/algorithms/dilithium/generators/dilithium_key_generator.dart';
+import 'package:post_quantum/src/core/factories/polynomial_factory.dart';
+import 'package:post_quantum/src/core/ntt/ntt_helper_dilithium.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 import 'package:hashlib/hashlib.dart';
 
 class Dilithium {

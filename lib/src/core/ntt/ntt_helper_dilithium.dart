@@ -1,5 +1,5 @@
-import 'package:crystals_pqc/src/core/ntt/ntt_helper.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring.dart';
+import 'package:post_quantum/src/core/ntt/ntt_helper.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 
 class DilithiumNTTHelper implements NTTHelper {
   int q;

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/crystals_pqc.iml" filepath="$PROJECT_DIR$/.idea/crystals_pqc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/post_quantum.iml" filepath="$PROJECT_DIR$/.idea/post_quantum.iml" />
     </modules>
   </component>
 </project>

@@ -1,4 +1,4 @@
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 
 abstract class NTTHelper {
 

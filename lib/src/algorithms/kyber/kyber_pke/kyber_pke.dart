@@ -5,8 +5,8 @@ import '../abstractions/pke_private_key.dart';
 import '../abstractions/pke_public_key.dart';
 import '../generators/key_generator.dart';
 
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring.dart';
-import 'package:crystals_pqc/src/core/polynomials/polynomial_ring_matrix.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
 class KyberPKE {
 

@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:crystals_pqc/crystals_pqc.dart';
+import 'package:post_quantum/post_quantum.dart';
 import 'package:test/test.dart';
 
 
@@ -25,10 +24,7 @@ void main() {
 
     test('Generating flow with given seed and nonce returns expected pre-generated shared keys', () {
       var seed = base64Decode(testData["seed"]);
-      var nonce = Uint8List.fromList([
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-      ]);
+      var nonce = base64Decode(testData["nonce"]);
 
       var (pk, sk) = kyber512.generateKeys(seed);
       var (cipher, sharedKey1) = kyber512.encapsulate(pk, nonce);
@@ -57,10 +53,7 @@ void main() {
 
     test('Generating flow with given seed and nonce returns expected flow parameters', () {
       var seed = base64Decode(testData["seed"]);
-      var nonce = Uint8List.fromList([
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-      ]);
+      var nonce = base64Decode(testData["nonce"]);
 
       var (pk, sk) = kyber768.generateKeys(seed);
       var (cipher, sharedKey1) = kyber768.encapsulate(pk, nonce);
@@ -89,10 +82,7 @@ void main() {
 
     test('Generating flow with given seed and nonce returns expected flow parameters', () {
       var seed = base64Decode(testData["seed"]);
-      var nonce = Uint8List.fromList([
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-        0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
-      ]);
+      var nonce = base64Decode(testData["nonce"]);
 
       var (pk, sk) = kyber1024.generateKeys(seed);
       var (cipher, sharedKey1) = kyber1024.encapsulate(pk, nonce);

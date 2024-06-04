@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crystals_pqc/crystals_pqc.dart';
+import 'package:post_quantum/post_quantum.dart';
 import 'package:test/test.dart';
 
 

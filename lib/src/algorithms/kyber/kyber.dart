@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:crystals_pqc/src/algorithms/kyber/abstractions/kem_private_key.dart';
-import 'package:crystals_pqc/src/algorithms/kyber/abstractions/kem_public_key.dart';
+import 'package:post_quantum/src/algorithms/kyber/abstractions/kem_private_key.dart';
+import 'package:post_quantum/src/algorithms/kyber/abstractions/kem_public_key.dart';
 import 'package:hashlib/hashlib.dart';
 
 import 'abstractions/pke_cipher.dart';
