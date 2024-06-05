@@ -23,17 +23,24 @@ class KemPrivateKey {
       throw UnimplementedError("Unknown kyber version");
     }
 
-    var index = 12 * kyberVersion * 32; // (12 * k * n)/8
-    if (bytes.length != index + 64) {
+    var skSize = 12 * kyberVersion * 32; // (12 * k * n)/8
+    var pkSize = 32 + (12 * kyberVersion * 32); // 32 + (12 * k * n)/8
+    if (bytes.length != skSize + pkSize + 64) {
       throw ArgumentError(
-          "Expected ${index+64} bytes but found ${bytes.length} instead.");
+          "Expected ${skSize + pkSize + 64} bytes but found ${bytes.length} instead.");
     }
 
+    var offset = 0;
+    var skBytes = bytes.sublist(offset, offset + skSize);
+    offset += skSize;
 
-    var skBytes = bytes.sublist(0, index);
-    var pkBytes = bytes.sublist(index, bytes.length - 64);
-    var h = bytes.sublist(bytes.length - 64, bytes.length - 32);
-    var z = bytes.sublist(bytes.length - 32);
+    var pkBytes = bytes.sublist(offset, offset + pkSize);
+    offset += pkSize;
+
+    var h = bytes.sublist(offset, offset + 32);
+    offset += 32;
+
+    var z = bytes.sublist(offset);
 
     return KemPrivateKey(
         sk: PKEPrivateKey.deserialize(skBytes, kyberVersion),
