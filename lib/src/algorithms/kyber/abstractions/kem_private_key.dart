@@ -19,7 +19,7 @@ class KemPrivateKey {
   });
 
   factory KemPrivateKey.deserialize(Uint8List bytes, int kyberVersion) {
-    if (kyberVersion != 2 || kyberVersion != 3 || kyberVersion != 4) {
+    if (kyberVersion != 2 && kyberVersion != 3 && kyberVersion != 4) {
       throw UnimplementedError("Unknown kyber version");
     }
 

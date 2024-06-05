@@ -7,5 +7,7 @@
 pubspec.lock
 
 # Do not add code coverage reports
-/coverage
-/coverage/**
+coverage/
+
+# IntelliJ IDEA
+.idea/

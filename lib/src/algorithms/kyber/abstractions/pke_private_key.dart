@@ -11,6 +11,10 @@ class PKEPrivateKey {
   }
 
   factory PKEPrivateKey.deserialize(Uint8List byteArray, int kyberVersion) {
+    if (kyberVersion != 2 && kyberVersion != 3 && kyberVersion != 4) {
+      throw UnimplementedError("Unknown kyber version");
+    }
+
     var s = PolynomialMatrix.deserialize(byteArray, kyberVersion, 1, 12, 256, 3329, isNtt: true);
     return PKEPrivateKey._internal(s);
   }

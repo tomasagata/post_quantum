@@ -11,6 +11,10 @@ class PKEPublicKey {
   }
 
   factory PKEPublicKey.deserialize(Uint8List byteArray, int kyberVersion) {
+    if (kyberVersion != 2 && kyberVersion != 3 && kyberVersion != 4) {
+      throw UnimplementedError("Unknown kyber version");
+    }
+
     var rho = byteArray.sublist(byteArray.length - 32);
     var serializedT = byteArray.sublist(0, byteArray.length - 32);
     var t = PolynomialMatrix.deserialize(

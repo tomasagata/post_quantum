@@ -11,7 +11,7 @@ Dart implementation of NIST's post-quantum algorithm candidates.
 ## Features
 
 This library includes the following algorithms:
-- __Kyber__, a post quantum Key Encapsulation Mechanism.
+- __Kyber__, a post-quantum Key Encapsulation Mechanism.
 - __Dilithium__, a post quantum Signature scheme.
 
 ## Usage
