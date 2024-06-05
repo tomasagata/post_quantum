@@ -1,3 +1,3 @@
-## 1.0.0-prerelease.2
+## 1.0.0-prerelease.3
 
-- Added key classes for each algorithm
+- Fixed key deserialization error
