@@ -1,3 +1,3 @@
-## 1.0.0-prerelease.1
+## 1.0.0-prerelease.2
 
-- Initial version.
+- Added key classes for each algorithm
