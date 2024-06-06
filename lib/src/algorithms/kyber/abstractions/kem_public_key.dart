@@ -21,4 +21,9 @@ class KemPublicKey {
   Uint8List serialize() {
     return publicKey.serialize();
   }
+
+  @override
+  bool operator ==(covariant KemPublicKey other) {
+    return publicKey == other.publicKey;
+  }
 }

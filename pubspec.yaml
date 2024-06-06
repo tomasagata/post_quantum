@@ -1,6 +1,6 @@
 name: post_quantum
-description: Dart implementation of the Kyber and Dilithium algorithms.
-version: 1.0.0-prerelease.4
+description: "Dart implementation of NIST's post-quantum algorithm candidates, Kyber and Dilithium."
+version: 1.0.0-prerelease.5
 repository: https://github.com/tomasagata/post_quantum
 
 environment:

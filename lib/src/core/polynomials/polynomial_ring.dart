@@ -418,4 +418,20 @@ class PolynomialRing {
     return this;
   }
 
+  @override
+  bool operator ==(covariant PolynomialRing other) {
+    bool equalCoefficients = true;
+    for (int i=0; i<coefficients.length; i++) {
+      if (coefficients[i] != other.coefficients[i]){
+        return false;
+      }
+    }
+
+    return equalCoefficients &&
+        n == other.n &&
+        q == other.q &&
+        isNtt == other.isNtt &&
+        modulusType == other.modulusType &&
+        helper == other.helper;
+  }
 }

@@ -187,4 +187,7 @@ class KyberNTTHelper implements NTTHelper{
     return (r0, r1);
   }
 
+  // Only checks if object is instance of KyberNTTHelper
+  @override
+  bool operator ==(covariant KyberNTTHelper other) => true;
 }
