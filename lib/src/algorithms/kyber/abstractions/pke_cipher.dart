@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:post_quantum/src/core/ntt/ntt_helper_kyber.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
@@ -39,11 +40,13 @@ class PKECypher {
     var serializedV = byteArray.sublist(sizeU);
 
     var u = PolynomialMatrix
-        .deserialize(serializedU, kyberVersion, 1, du, 256, 3329)
-        .decompress(du);
+        .deserialize(serializedU, kyberVersion, 1, du, 256, 3329,
+          helper: KyberNTTHelper()
+        ).decompress(du);
     var v = PolynomialRing
-        .deserialize(serializedV, dv, 256, 3329)
-        .decompress(dv);
+        .deserialize(serializedV, dv, 256, 3329,
+          helper: KyberNTTHelper()
+        ).decompress(dv);
 
     return PKECypher(u: u, v: v, du: du, dv: dv);
   }
@@ -86,7 +89,7 @@ class PKECypher {
   /// how to implement it and would like to help out, push a commit to
   /// the repository.
   @override
-  bool operator== (covariant PKECypher other) {
+  bool operator ==(covariant PKECypher other) {
     Uint8List thisCipher = serialize();
     Uint8List otherCipher = other.serialize();
 

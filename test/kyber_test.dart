@@ -48,6 +48,20 @@ void main() {
       expect(pk, genPk);
       expect(sk, genSk);
     });
+
+    test('Generating flow with given keys returns expected flow parameters', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var nonce = base64Decode(testData["nonce"]);
+
+      var pk = KemPublicKey.deserialize(pkBytes, 2);
+      var sk = KemPrivateKey.deserialize(skBytes, 2);
+      var (cipher, sharedKey1) = kyber512.encapsulate(pk, nonce);
+      var sharedKey2 = kyber512.decapsulate(cipher, sk);
+
+      expect(base64Encode(sharedKey1), testData["key1"]);
+      expect(base64Encode(sharedKey2), testData["key2"]);
+    });
   });
 
   group('Kyber 768-bit tests', () {
@@ -90,6 +104,20 @@ void main() {
       expect(pk, genPk);
       expect(sk, genSk);
     });
+
+    test('Generating flow with given keys returns expected flow parameters', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var nonce = base64Decode(testData["nonce"]);
+
+      var pk = KemPublicKey.deserialize(pkBytes, 3);
+      var sk = KemPrivateKey.deserialize(skBytes, 3);
+      var (cipher, sharedKey1) = kyber768.encapsulate(pk, nonce);
+      var sharedKey2 = kyber768.decapsulate(cipher, sk);
+
+      expect(base64Encode(sharedKey1), testData["key1"]);
+      expect(base64Encode(sharedKey2), testData["key2"]);
+    });
   });
 
   group('Kyber 1024-bit tests', () {
@@ -131,6 +159,20 @@ void main() {
 
       expect(pk, genPk);
       expect(sk, genSk);
+    });
+
+    test('Generating flow with given keys returns expected flow parameters', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var nonce = base64Decode(testData["nonce"]);
+
+      var pk = KemPublicKey.deserialize(pkBytes, 4);
+      var sk = KemPrivateKey.deserialize(skBytes, 4);
+      var (cipher, sharedKey1) = kyber1024.encapsulate(pk, nonce);
+      var sharedKey2 = kyber1024.decapsulate(cipher, sk);
+
+      expect(base64Encode(sharedKey1), testData["key1"]);
+      expect(base64Encode(sharedKey2), testData["key2"]);
     });
   });
 }
