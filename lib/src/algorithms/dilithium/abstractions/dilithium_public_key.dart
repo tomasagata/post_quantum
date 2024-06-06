@@ -35,7 +35,9 @@ class DilithiumPublicKey {
   }
 
   static PolynomialMatrix _deserializeT1(Uint8List bytes, int k) {
-    return PolynomialMatrix.deserialize(bytes, k, 1, 10, 256, 8380417, helper: DilithiumNTTHelper());
+    return PolynomialMatrix.deserialize(
+        bytes, k, 1, 10, 256, 8380417,
+        helper: DilithiumNTTHelper());
   }
 
   Uint8List _serializeT1() {
@@ -50,5 +52,14 @@ class DilithiumPublicKey {
     result.add(rho);
     result.add( _serializeT1() );
     return result.toBytes();
+  }
+
+  @override
+  bool operator ==(covariant DilithiumPublicKey other) {
+    for (int i=0; i<rho.length; i++) {
+      if(rho[i] != other.rho[i]) return false;
+    }
+
+    return t1 == other.t1;
   }
 }

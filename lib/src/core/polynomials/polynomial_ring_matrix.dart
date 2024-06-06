@@ -372,4 +372,19 @@ class PolynomialMatrix {
     return this;
   }
 
+  @override
+  bool operator ==(covariant PolynomialMatrix other) {
+    if (columns != other.columns || rows != other.rows) {
+      return false;
+    }
+
+    for (int i=0; i<rows; i++) {
+      for (int j=0; j<columns; j++) {
+        if (elementMatrix[i][j] != other.elementMatrix[i][j]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 }

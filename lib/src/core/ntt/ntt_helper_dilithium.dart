@@ -208,4 +208,7 @@ class DilithiumNTTHelper implements NTTHelper {
     return coefs;
   }
 
+  // Only checks if object is instance of DilithiumNTTHelper
+  @override
+  bool operator ==(covariant DilithiumNTTHelper other) => true;
 }

@@ -59,6 +59,21 @@ class KemPrivateKey {
     builder.add(z);
     return builder.toBytes();
   }
+
+  @override
+  bool operator ==(covariant KemPrivateKey other) {
+    sk == other.sk;
+
+    for (int i=0; i<pkHash.length; i++) {
+      if (pkHash[i] != other.pkHash[i]) return false;
+    }
+
+    for (int i=0; i<z.length; i++) {
+      if (z[i] != other.z[i]) return false;
+    }
+
+    return pk == other.pk && sk == other.sk;
+  }
 }
 
 

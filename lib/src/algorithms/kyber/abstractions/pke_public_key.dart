@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:post_quantum/src/core/ntt/ntt_helper_kyber.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
 class PKEPublicKey {
@@ -18,7 +19,8 @@ class PKEPublicKey {
     var rho = byteArray.sublist(byteArray.length - 32);
     var serializedT = byteArray.sublist(0, byteArray.length - 32);
     var t = PolynomialMatrix.deserialize(
-        serializedT, kyberVersion, 1, 12, 256, 3329, isNtt: true);
+        serializedT, kyberVersion, 1, 12, 256, 3329,
+        isNtt: true, helper: KyberNTTHelper());
     return PKEPublicKey._internal(t, rho);
   }
 
@@ -44,4 +46,12 @@ class PKEPublicKey {
     return result.toBytes();
   }
 
+  @override
+  bool operator ==(covariant PKEPublicKey other) {
+    for (int i=0; i<rho.length; i++) {
+      if(rho[i] != other.rho[i]) return false;
+    }
+
+    return t == other.t;
+  }
 }

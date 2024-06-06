@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:post_quantum/src/core/ntt/ntt_helper_kyber.dart';
+import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
 class PKEPrivateKey {
@@ -15,7 +17,9 @@ class PKEPrivateKey {
       throw UnimplementedError("Unknown kyber version");
     }
 
-    var s = PolynomialMatrix.deserialize(byteArray, kyberVersion, 1, 12, 256, 3329, isNtt: true);
+    var s = PolynomialMatrix.deserialize(
+        byteArray, kyberVersion, 1, 12, 256, 3329,
+        isNtt: true, helper: KyberNTTHelper(), modulusType: Modulus.centered);
     return PKEPrivateKey._internal(s);
   }
 
@@ -36,4 +40,8 @@ class PKEPrivateKey {
     return s.serialize(12);
   }
 
+  @override
+  bool operator ==(covariant PKEPrivateKey other) {
+    return s == other.s;
+  }
 }

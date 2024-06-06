@@ -34,6 +34,19 @@ void main() {
       expect(cipher.base64, testData["cipher"]);
       expect(base64Encode(decryptedMsg), testData["decrypted_msg"]);
     });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = PKEPublicKey.deserialize(pkBytes, 2);
+      var sk = PKEPrivateKey.deserialize(skBytes, 2);
+      var (genPk, genSk) = kyber512.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
+    });
   });
 
   group('KyberPKE 768-bit tests', () {
@@ -64,6 +77,19 @@ void main() {
       expect(cipher.base64, testData["cipher"]);
       expect(base64Encode(decryptedMsg), testData["decrypted_msg"]);
     });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = PKEPublicKey.deserialize(pkBytes, 3);
+      var sk = PKEPrivateKey.deserialize(skBytes, 3);
+      var (genPk, genSk) = kyber768.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
+    });
   });
 
   group('KyberPKE 1024-bit tests', () {
@@ -93,6 +119,19 @@ void main() {
 
       expect(cipher.base64, testData["cipher"]);
       expect(base64Encode(decryptedMsg), testData["decrypted_msg"]);
+    });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = PKEPublicKey.deserialize(pkBytes, 4);
+      var sk = PKEPrivateKey.deserialize(skBytes, 4);
+      var (genPk, genSk) = kyber1024.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
     });
   });
 }

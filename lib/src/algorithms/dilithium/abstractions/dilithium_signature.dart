@@ -161,4 +161,13 @@ class DilithiumSignature {
     result.add( _serializeH(k, omega) );
     return result.toBytes();
   }
+
+  @override
+  bool operator ==(covariant DilithiumSignature other) {
+    for (int i=0; i<cTilde.length; i++) {
+      if (cTilde[i] != other.cTilde[i]) return false;
+    }
+
+    return z == other.z && h == other.h;
+  }
 }

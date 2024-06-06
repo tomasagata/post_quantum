@@ -33,6 +33,19 @@ void main() {
       var isValid = dilithium2.verify(pk, message, sig);
       expect(isValid, testData["is_valid"]);
     });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 2);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 2);
+      var (genPk, genSk) = dilithium2.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
+    });
   });
 
   group('Dilithium 3 tests', () {
@@ -62,6 +75,19 @@ void main() {
       var isValid = dilithium3.verify(pk, message, sig);
       expect(isValid, testData["is_valid"]);
     });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 3);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 3);
+      var (genPk, genSk) = dilithium3.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
+    });
   });
 
   group('Dilithium 5 tests', () {
@@ -90,6 +116,19 @@ void main() {
 
       var isValid = dilithium5.verify(pk, message, sig);
       expect(isValid, testData["is_valid"]);
+    });
+
+    test('Deserialized keys are equal to generated keys', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var seed = base64Decode(testData["seed"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 5);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 5);
+      var (genPk, genSk) = dilithium5.generateKeys(seed);
+
+      expect(pk, genPk);
+      expect(sk, genSk);
     });
   });
 }

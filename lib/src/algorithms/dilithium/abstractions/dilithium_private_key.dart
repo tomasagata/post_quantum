@@ -80,7 +80,8 @@ class DilithiumPrivateKey {
     PolynomialMatrix s;
 
     s = PolynomialMatrix.deserialize(
-        bytes, rows, 1, wordSize, 256, 8380417, helper: DilithiumNTTHelper()
+        bytes, rows, 1, wordSize, 256, 8380417,
+        helper: DilithiumNTTHelper()
     );
 
     s.mapCoefficients((coef) => eta - coef, inPlace: true);
@@ -90,7 +91,8 @@ class DilithiumPrivateKey {
 
   static PolynomialMatrix _deserializeT0(Uint8List bytes, int l) {
     var t0 = PolynomialMatrix.deserialize(
-        bytes, l, 1, 13, 256, 8380417, modulusType: Modulus.centered, helper: DilithiumNTTHelper()
+        bytes, l, 1, 13, 256, 8380417,
+        modulusType: Modulus.centered, helper: DilithiumNTTHelper()
     );
 
     t0.mapCoefficients((coef) => (1 << 12) - coef, inPlace: true);
@@ -137,4 +139,22 @@ class DilithiumPrivateKey {
     return result.toBytes();
   }
 
+  @override
+  bool operator ==(covariant DilithiumPrivateKey other) {
+    for (int i=0; i<rho.length; i++) {
+      if(rho[i] != other.rho[i]) return false;
+    }
+
+    for (int i=0; i<K.length; i++) {
+      if(K[i] != other.K[i]) return false;
+    }
+
+    for (int i=0; i<tr.length; i++) {
+      if(tr[i] != other.tr[i]) return false;
+    }
+
+    return t0 == other.t0 &&
+      s1 == other.s1 &&
+      s2 == other.s2;
+  }
 }
