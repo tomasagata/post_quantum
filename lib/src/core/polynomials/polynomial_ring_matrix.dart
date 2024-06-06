@@ -184,7 +184,7 @@ class PolynomialMatrix {
     List<PolynomialRing> decompressedPolynomials = [];
     for (var row in elementMatrix) {
       for (var poly in row) {
-        decompressedPolynomials.add(poly.compress(d));
+        decompressedPolynomials.add(poly.decompress(d));
       }
     }
     return PolynomialMatrix.fromList(decompressedPolynomials, rows, columns);

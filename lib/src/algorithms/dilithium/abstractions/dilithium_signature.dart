@@ -81,7 +81,7 @@ class DilithiumSignature {
 
     int k = 0;
     for(int i = 0; i < K; ++i) {
-      var poly = PolynomialRing.zeros(n, q);
+      var poly = PolynomialRing.zeros(n, q, helper: DilithiumNTTHelper());
 
       if(bytes[omega + i] < k || bytes[omega + i] > omega) {
         throw ArgumentError("Signature is invalid or corrupted");

@@ -46,6 +46,33 @@ void main() {
       expect(pk, genPk);
       expect(sk, genSk);
     });
+
+    test('Deserialized signature is equal to generated one', () {
+      var seed = base64Decode(testData["seed"]);
+      var message = base64Decode(testData["message"]);
+      var sigBytes = base64Decode(testData["sig"]);
+
+      var (_, sk) = dilithium2.generateKeys(seed);
+      var deserializedSignature = DilithiumSignature
+          .deserialize(sigBytes, 2);
+      var generatedSignature = dilithium2.sign(sk, message);
+
+      expect(deserializedSignature, generatedSignature);
+    });
+
+    test('Signing with given keys returns expected pre-generated signature', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var message = base64Decode(testData["message"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 2);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 2);
+      var sig = dilithium2.sign(sk, message);
+      expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium2.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
+    });
   });
 
   group('Dilithium 3 tests', () {
@@ -88,6 +115,33 @@ void main() {
       expect(pk, genPk);
       expect(sk, genSk);
     });
+
+    test('Deserialized signature is equal to generated one', () {
+      var seed = base64Decode(testData["seed"]);
+      var message = base64Decode(testData["message"]);
+      var sigBytes = base64Decode(testData["sig"]);
+
+      var (_, sk) = dilithium3.generateKeys(seed);
+      var deserializedSignature = DilithiumSignature
+          .deserialize(sigBytes, 3);
+      var generatedSignature = dilithium3.sign(sk, message);
+
+      expect(deserializedSignature, generatedSignature);
+    });
+
+    test('Signing with given keys returns expected pre-generated signature', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var message = base64Decode(testData["message"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 3);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 3);
+      var sig = dilithium3.sign(sk, message);
+      expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium3.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
+    });
   });
 
   group('Dilithium 5 tests', () {
@@ -129,6 +183,33 @@ void main() {
 
       expect(pk, genPk);
       expect(sk, genSk);
+    });
+
+    test('Deserialized signature is equal to generated one', () {
+      var seed = base64Decode(testData["seed"]);
+      var message = base64Decode(testData["message"]);
+      var sigBytes = base64Decode(testData["sig"]);
+
+      var (_, sk) = dilithium5.generateKeys(seed);
+      var deserializedSignature = DilithiumSignature
+          .deserialize(sigBytes, 5);
+      var generatedSignature = dilithium5.sign(sk, message);
+
+      expect(deserializedSignature, generatedSignature);
+    });
+
+    test('Signing with given keys returns expected pre-generated signature', () {
+      var pkBytes = base64Decode(testData["pk"]);
+      var skBytes = base64Decode(testData["sk"]);
+      var message = base64Decode(testData["message"]);
+
+      var pk = DilithiumPublicKey.deserialize(pkBytes, 5);
+      var sk = DilithiumPrivateKey.deserialize(skBytes, 5);
+      var sig = dilithium5.sign(sk, message);
+      expect(sig.base64, testData["sig"]);
+
+      var isValid = dilithium5.verify(pk, message, sig);
+      expect(isValid, testData["is_valid"]);
     });
   });
 }
