@@ -4,10 +4,6 @@ import 'package:post_quantum/src/core/factories/polynomial_factory.dart';
 import 'package:post_quantum/src/core/ntt/ntt_helper_kyber.dart';
 import 'package:post_quantum/src/core/primitives/prf.dart';
 import 'package:post_quantum/src/core/primitives/xof.dart';
-import 'package:hashlib/hashlib.dart';
-
-import '../abstractions/pke_private_key.dart';
-import '../abstractions/pke_public_key.dart';
 
 import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
@@ -55,16 +51,6 @@ class KeyGenerator {
     message.addByte(j);
     message.addByte(i);
     return XOF(message.toBytes());
-  }
-
-
-  /// G primitive from Kyber specification.
-  ///
-  /// G takes in a 256-bit (32-byte) seed and returns
-  /// its SHA3-512 hash split in two.
-  (Uint8List lower32Bytes, Uint8List upper32Bytes) _g(Uint8List seed) {
-    var bytes = sha3_512.convert(seed).bytes;
-    return (bytes.sublist(0, 32), bytes.sublist(32));
   }
 
 
@@ -210,51 +196,18 @@ class KeyGenerator {
 
 
 
-  // ------------ INTERNAL API ------------
+  // ------------ PUBLIC METHODS ------------
 
-  PolynomialMatrix _generateMatrixA(Uint8List rho, {bool isNtt = false}) {
+  PolynomialMatrix expandA(Uint8List rho, {bool isNtt = false}) {
     return _sampleMatrix(rho, isNtt: isNtt);
   }
 
-  PolynomialMatrix _generateVectorS(Uint8List sigma) {
+  PolynomialMatrix expandS(Uint8List sigma) {
     return _sampleNoise(sigma, eta1, 0, k);
   }
 
-  PolynomialMatrix _generateVectorE(Uint8List sigma) {
+  PolynomialMatrix expandE(Uint8List sigma) {
     return _sampleNoise(sigma, eta1, k, k);
-  }
-
-
-
-
-
-
-
-  // ------------ PUBLIC METHODS ------------
-
-  /// Sample Documentation
-  (PKEPublicKey pk, PKEPrivateKey sk) generateKeys(Uint8List seed) {
-    var (rho, sigma) = _g(seed);
-
-    var A = _generateMatrixA(rho, isNtt: true);
-
-    var s = _generateVectorS(sigma);
-    s.toNtt();
-
-    var e = _generateVectorE(sigma);
-    e.toNtt();
-
-
-    var t = A.multiply(s, skipReduce: true);
-
-
-    t = t.toMontgomery();
-    t = t.plus(e, skipReduce: true);
-
-    t.reduceCoefficients();
-    s.reduceCoefficients();
-
-    return (PKEPublicKey(t, rho), PKEPrivateKey(s));
   }
 
   /// Sample documentation
@@ -269,13 +222,6 @@ class KeyGenerator {
     PolynomialRing e2 = _sampleNoise(seed, eta2, 2*k, 1).toRing();
 
     return (r, e1, e2);
-  }
-
-  PolynomialMatrix regenerateA(Uint8List rho) {
-    if(rho.length != 32) {
-      throw ArgumentError("RHO must be 32 bytes in size");
-    }
-    return _generateMatrixA(rho, isNtt: true);
   }
 
 }

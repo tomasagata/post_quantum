@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:post_quantum/src/algorithms/kyber/abstractions/kem_private_key.dart';
 import 'package:post_quantum/src/algorithms/kyber/abstractions/kem_public_key.dart';
 import 'package:hashlib/hashlib.dart';
+import 'package:post_quantum/src/core/observer/null_step_observer.dart';
+import 'package:post_quantum/src/core/observer/step_observer.dart';
 
 import 'abstractions/pke_cipher.dart';
 import 'kyber_pke/kyber_pke.dart';
@@ -126,7 +128,9 @@ class Kyber {
 
   /// A Kyber keypair is derived deterministically from a
   /// 64-octet seed.
-  (KemPublicKey pk, KemPrivateKey sk) generateKeys(Uint8List seed) {
+  (KemPublicKey pk, KemPrivateKey sk) generateKeys(Uint8List seed, {
+    StepObserver observer = const NullStepObserver()
+  }) {
     if( seed.length != 64 ) {
       throw ArgumentError("Seed must be 64 bytes in length");
     }
@@ -136,13 +140,40 @@ class Kyber {
 
     // Generate PKE keys for decryption and encryption of cyphers.
     var (pkPke, skPke) = innerPKE.generateKeys(seed.sublist(0, 32));
+    observer.addStep(
+      title: "Generate Kyber's internal PKE keys",
+      description: "Using given seed to generate kyber encryption keys.",
+      parameters: {"seed": seed},
+      results: {"pk_pke": pkPke, "sk_pke": skPke}
+    );
 
     var pk = KemPublicKey(publicKey: pkPke);
+    observer.addStep(
+      title: "Generate Kyber public key",
+      description: "Using Kyber's internal PKE public key to "
+        "generate a KEM public key.",
+      parameters: {"pk_pke": pkPke},
+      results: {"pk": pk}
+    );
+
+    var pkHash = _h(pkPke.serialize());
     var sk = KemPrivateKey(
         sk: skPke,
         pk: pkPke,
-        pkHash: _h(pkPke.serialize()),
+        pkHash: pkHash,
         z: z
+    );
+    observer.addStep(
+        title: "Generate Kyber private key",
+        description: "Using Kyber's internal PKE public key, private key and"
+            " seed to generate a KEM secret key.",
+        parameters: {
+          "sk_pke": skPke,
+          "pk_pke": pkPke,
+          "pk_pke_hash": pkHash,
+          "z": z
+        },
+        results: {"sk": pk}
     );
 
     return (pk, sk);
@@ -153,28 +184,76 @@ class Kyber {
   /// Kyber encapsulation takes a public key and a 32-octet seed
   /// and deterministically generates a shared secret and ciphertext
   /// for the public key.
-  (PKECypher pkeCypher, Uint8List sharedSecret) encapsulate(KemPublicKey pk, Uint8List nonce) {
+  (PKECypher cipher, Uint8List sharedSecret) encapsulate(
+      KemPublicKey pk, Uint8List nonce, {
+        StepObserver observer = const NullStepObserver()
+  }) {
     if( nonce.length != 32 ) {
       throw ArgumentError("Nonce must be 32 bytes in length");
     }
 
     // Calculate hashes.
-    var encapsulationSeedHash = _h(nonce);
+    var nonceHash = _h(nonce);
     var publicKeyHash = _h(pk.serialize());
+    observer.addStep(
+      title: "Calculate pk and nonce hashes",
+      description: "Calculating the SHA3-256 hash of both the nonce "
+          "and the public key.",
+      parameters: {"pk": pk, "nonce": nonce},
+      results: {"pk_hash": publicKeyHash, "nonce_hash": nonceHash}
+    );
 
     // Calculate seeds.
-    var (sharedSecretSeed, pkeSeed) = _g( _join(encapsulationSeedHash, publicKeyHash) );
+    var (sharedSecretSeed, encryptionRandomizer) = _g(
+        _join(nonceHash, publicKeyHash) );
+    observer.addStep(
+      title: "Calculate shared secret seed and encryption randomizer",
+      description: "Appending the bytes of the nonce and pk hashes and SHA3-256"
+          "ing them again, generating a shared secret seed and an encryption "
+          "randomizer.",
+      parameters: {
+        "nonce_hash": nonceHash,
+        "ph_hash": publicKeyHash
+      },
+      results: {
+        "shared_secret_seed": sharedSecretSeed,
+        "encr_rand": encryptionRandomizer
+      }
+    );
 
-    // Encrypt the hash of the encapsulation seed.
-    var pkeCypher = innerPKE.encrypt(pk.publicKey, encapsulationSeedHash, pkeSeed);
+    // Encrypt the nonce hash.
+    var cipher = innerPKE.encrypt(
+        pk.publicKey, nonceHash, encryptionRandomizer);
+    observer.addStep(
+      title: "Obtain ciphertext",
+      description: "Encrypting nonce hash and retrieving ciphertext.",
+      parameters: {"nonce_hash": nonceHash, "encr_rand":encryptionRandomizer},
+      results: {"cipher": cipher}
+    );
 
-    // Calculate cypher hash.
-    var cypherHash = _h(pkeCypher.serialize());
+    // Calculate cipher hash.
+    var cipherHash = _h(cipher.serialize());
+    observer.addStep(
+      title: "Hash ciphertext",
+      description: "SHA3-256ing the ciphertext.",
+      parameters: {"cipher": cipher},
+      results: {"cipher_hash": cipherHash}
+    );
 
     // Calculate shared secret.
-    var sharedSecret = _kdf( _join(sharedSecretSeed, cypherHash) );
+    var sharedSecret = _kdf( _join(sharedSecretSeed, cipherHash) );
+    observer.addStep(
+      title: "Calculate shared secret",
+      description: "Obtaining shared secret by SHAKE256ing the shared secret "
+          "seed and the ciphertext hash.",
+      parameters: {
+        "shared_secret_seed": sharedSecretSeed,
+        "cipher_hash": cipherHash},
+      results: {
+        "shared_secret": sharedSecret}
+    );
 
-    return (pkeCypher, sharedSecret);
+    return (cipher, sharedSecret);
   }
 
 
@@ -187,7 +266,9 @@ class Kyber {
   /// encapsulation step.
   /// - If decapsulation was unsuccessful, returns an invalid shared key created
   /// with the given 32-byte z value calculated in the key-generation step.
-  Uint8List decapsulate(PKECypher cipher, KemPrivateKey sk) {
+  Uint8List decapsulate(PKECypher cipher, KemPrivateKey sk, {
+    StepObserver observer = const NullStepObserver()
+  }) {
 
     // Get attributes from private key
     var skPke = sk.sk;
@@ -195,25 +276,63 @@ class Kyber {
     var pkHash = sk.pkHash;
     var z = sk.z;
 
-    // Decrypt the hash of the encapsulation seed.
+    // Decrypt the nonce's hash used in the encapsulation step.
     // This will be used to recreate the cipher.
-    var encapsulationSeedHash2 = innerPKE.decrypt(skPke, cipher);
+    var nonceHash = innerPKE.decrypt(skPke, cipher);
+    observer.addStep(
+      title: "Decrypt ciphertext",
+      description: "Decrypting the ciphertext with the private key and "
+          "retrieving the original nonce hash.",
+      parameters: {"cipher": cipher, "sk_pke": skPke},
+      results: {"nonce_hash": nonceHash}
+    );
 
     // Recreate the cipher.
     // This is done to check if received and recreated cipher are the same.
     // If they do not match, a transmission or decryption error has occurred.
-    var (sharedSecretSeed2, pkeSeed2) = _g( _join(encapsulationSeedHash2, pkHash) );
-    var recreatedCipher = innerPKE.encrypt(pkPke, encapsulationSeedHash2, pkeSeed2);
+    var (sharedSecretSeed2, pkeSeed2) = _g( _join(nonceHash, pkHash) );
+    var recreatedCipher = innerPKE.encrypt(pkPke, nonceHash, pkeSeed2);
+    observer.addStep(
+        title: "Recreate cipher",
+        description: "Using the nonce and public key to recreate "
+            "the ciphertext.",
+        parameters: {"pk_hash": pkHash, "nonce_hash": nonceHash},
+        results: {"recreated_cipher": recreatedCipher}
+    );
 
     // Calculate the received cipher hash.
-    var cypherHash = _h(cipher.serialize());
+    var cipherHash = _h(cipher.serialize());
+    observer.addStep(
+        title: "Calculate the received cipher's hash",
+        description: "SHA3-256ing the received ciphertext.",
+        parameters: {"cipher": cipher},
+        results: {"cipher_hash": cipherHash}
+    );
 
     // Calculate the shared secret using received cipher.
-    var sharedSecret = _kdf( _join(sharedSecretSeed2, cypherHash) );
+    var sharedSecret = _kdf( _join(sharedSecretSeed2, cipherHash) );
+    observer.addStep(
+        title: "Calculate shared secret",
+        description: "Obtaining the shared secret seed by using the nonce hash. "
+            "By SHAKE256ing this and the received ciphertext hash, we obtain "
+            "the shared secret.",
+        parameters: {
+          "shared_secret_seed": sharedSecretSeed2,
+          "cipher_hash": cipherHash},
+        results: {
+          "shared_secret": sharedSecret}
+    );
 
     // Create a constant time invalid shared secret to return when decryption
     // fails in order to avoid timing attacks.
-    var failedSharedSecret = _kdf( _join(z, cypherHash) );
+    var failedSharedSecret = _kdf( _join(z, cipherHash) );
+    observer.addStep(
+        title: "Create throwaway shared secret",
+        description: "Creating throwaway shared secret if received cipher "
+            "and recreated one do not match.",
+        parameters: {"z": z, "cipher_hash": cipherHash},
+        results: {"failed_shared_secret": failedSharedSecret}
+    );
 
     // If the received and recreated ciphers are equal,
     // this means that decryption was successful.

@@ -1,5 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:hashlib/hashlib.dart';
+import 'package:post_quantum/src/core/observer/null_step_observer.dart';
+import 'package:post_quantum/src/core/observer/step_observer.dart';
+
 import '../abstractions/pke_cipher.dart';
 import '../abstractions/pke_private_key.dart';
 import '../abstractions/pke_public_key.dart';
@@ -75,36 +79,122 @@ class KyberPKE {
 
 
 
+  // --------------- PRIMITIVES --------------
+
+  /// G primitive from Kyber specification.
+  ///
+  /// G takes in a 256-bit (32-byte) seed and returns
+  /// its SHA3-512 hash split in two.
+  (Uint8List lower32Bytes, Uint8List upper32Bytes) _g(Uint8List seed) {
+    var bytes = sha3_512.convert(seed).bytes;
+    return (bytes.sublist(0, 32), bytes.sublist(32));
+  }
+
 
 
 
   // -------------- PUBLIC PKE API --------------
 
-  (PKEPublicKey pk, PKEPrivateKey sk) generateKeys(Uint8List seed) {
+  (PKEPublicKey pk, PKEPrivateKey sk) generateKeys(Uint8List seed, {
+    StepObserver observer = const NullStepObserver()
+  }) {
     if( seed.length != 32 ) {
       throw ArgumentError("Seed must be 32 bytes in length");
     }
-    return keyGenerator.generateKeys(seed);
+
+    var (rho, sigma) = _g(seed);
+
+    var A = keyGenerator.expandA(rho, isNtt: true);
+    observer.addStep(
+      title: "Generating Matrix A",
+      description: "Taking in the given seed and generating matrix A in"
+          "NTT form.",
+      parameters: {"seed": seed},
+      results: {"A": A.copy()}
+    );
+
+    var s = keyGenerator.expandS(sigma);
+    s.toNtt();
+    observer.addStep(
+      title: "Generating vector S",
+      description: "Taking in the given seed and generating vector S in"
+          "NTT form.",
+      parameters: {"seed": seed},
+      results: {"s": s.copy()}
+    );
+
+    var e = keyGenerator.expandS(sigma);
+    e.toNtt();
+    observer.addStep(
+        title: "Generating vector e",
+        description: "Taking in the given seed and generating vector e in"
+            "NTT form.",
+        parameters: {"seed": seed},
+        results: {"e": e.copy()}
+    );
+
+    var t = A.multiply(s, skipReduce: true);
+    t = t.toMontgomery();
+    t = t.plus(e, skipReduce: true);
+    observer.addStep(
+        title: "Generating vector t",
+        description: "Calculating vector t by doing (A*s)+e.",
+        parameters: {"seed": seed},
+        results: {"t": t.copy()}
+    );
+
+    t.reduceCoefficients();
+    s.reduceCoefficients();
+
+    return (PKEPublicKey(t, rho), PKEPrivateKey(s));
   }
 
 
 
-  PKECypher encrypt(PKEPublicKey pk, Uint8List msg, Uint8List seed) {
+  PKECypher encrypt(PKEPublicKey pk, Uint8List msg, Uint8List coins, {
+    StepObserver observer = const NullStepObserver()
+  }) {
     if( msg.length != 32 ) {
       throw ArgumentError("Message must be 32 bytes in length");
     }
 
     PolynomialMatrix t = pk.t.copy();
-    PolynomialMatrix A = keyGenerator.regenerateA(pk.rho);
-    var (r, e1, e2) = keyGenerator.generateNoiseVectors(seed);
+    PolynomialMatrix A = keyGenerator.expandA(pk.rho, isNtt: true);
+
+    var (r, e1, e2) = keyGenerator.generateNoiseVectors(coins);
     r.toNtt();
+    observer.addStep(
+        title: "Generating noise vectors",
+        description: "Generating vectors r, e1 and ring e2 "
+            "from \"coins\" randomizer",
+        parameters: {"coins": coins},
+        results: {
+          "r": r.copy(),
+          "e1": e1.copy(),
+          "e2": e2.copy()
+        }
+    );
 
     var msgPolynomial = PolynomialRing.deserialize(msg, 1, n, q).decompress(1);
+    observer.addStep(
+        title: "Transforming message into polynomial",
+        description: "Decomposing each bit of the message into a "
+            "polynomial coefficient and multiplying it by q/2",
+        parameters: {"msg": msg},
+        results: {"msg_poly": msgPolynomial}
+    );
 
     PolynomialMatrix u = A.transpose()
         .multiply(r)
         .fromNtt()
         .plus(e1);
+
+    observer.addStep(
+        title: "Calculating matrix u",
+        description: "Obtaining matrix by calculating (A*r)+e1.",
+        parameters: {"A": A.copy(), "r": r.copy()},
+        results: {"u": u.copy()}
+    );
 
     PolynomialRing v = t.transpose() // 1xn
         .multiply(r) // nx1
@@ -113,11 +203,25 @@ class KyberPKE {
         .plus(e2)
         .plus(msgPolynomial);
 
+    observer.addStep(
+        title: "Calculating ring v",
+        description: "Obtaining matrix by calculating (t*r)+e2+msg",
+        parameters: {
+          "t": t.copy(),
+          "r": r.copy(),
+          "e2": e2.copy(),
+          "msg_poly": msgPolynomial.copy()
+        },
+        results: {"v": v.copy()}
+    );
+
     return PKECypher(u: u, v: v, du: du, dv: dv);
   }
 
 
-  Uint8List decrypt(PKEPrivateKey sk, PKECypher cypher) {
+  Uint8List decrypt(PKEPrivateKey sk, PKECypher cypher, {
+    StepObserver observer = const NullStepObserver()
+  }) {
     var sTransposed = sk.s.copy().transpose();
     var uHat = cypher.u.copy().toNtt();
     var v = cypher.v.copy();
@@ -128,6 +232,12 @@ class KyberPKE {
                             .toRing();
 
     msgPolynomial = v.minus(msgPolynomial);
+    observer.addStep(
+        title: "Decrypting message polynomial",
+        description: "Decrypt message polynomial by calculating v - (s*u)",
+        parameters: {"v": v, "s": sTransposed, "u": uHat},
+        results: {"msg_poly": msgPolynomial.copy()}
+    );
 
     return msgPolynomial.compress(1).serialize(1);
   }
