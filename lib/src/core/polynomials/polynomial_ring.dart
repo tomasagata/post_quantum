@@ -377,7 +377,8 @@ class PolynomialRing {
         q,
         modulusType: modulusType,
         isNtt: isNtt,
-        helper: helper
+        helper: helper,
+        skipReduce: true
     );
   }
 

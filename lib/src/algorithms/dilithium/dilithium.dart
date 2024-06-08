@@ -6,6 +6,8 @@ import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_sig
 import 'package:post_quantum/src/algorithms/dilithium/generators/dilithium_key_generator.dart';
 import 'package:post_quantum/src/core/factories/polynomial_factory.dart';
 import 'package:post_quantum/src/core/ntt/ntt_helper_dilithium.dart';
+import 'package:post_quantum/src/core/observer/null_step_observer.dart';
+import 'package:post_quantum/src/core/observer/step_observer.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 import 'package:hashlib/hashlib.dart';
@@ -279,15 +281,31 @@ class Dilithium {
 
   /// A Dilithium keypair is derived deterministically from a
   /// 32-octet seed.
-  (DilithiumPublicKey pk, DilithiumPrivateKey sk) generateKeys(Uint8List seed) {
+  (DilithiumPublicKey pk, DilithiumPrivateKey sk) generateKeys(Uint8List seed, {
+    StepObserver observer = const NullStepObserver()
+  }) {
     if( seed.length != 32 ) {
       throw ArgumentError("Seed must be 32 bytes in length");
     }
+    var seedBytes = _h(seed, 128);
 
-    // Generate PKE keys for decryption and encryption of cyphers.
-    var (pk, sk) = keyGenerator.generateKeys(seed);
+    var rho = seedBytes.sublist(0, 32);       // 32 bytes
+    var rhoPrime = seedBytes.sublist(32, 96); // 64 bytes
+    var K = seedBytes.sublist(96);            // 32 bytes
 
-    return (pk, sk);
+    var A = keyGenerator.expandA(rho, isNtt: true);
+    var (s1, s2) = keyGenerator.expandS(rhoPrime);
+    var s1Hat = s1.copy().toNtt();
+
+    var step1 = A.multiply(s1Hat);
+    var t = step1.fromNtt().plus(s2);
+
+    var (t1, t0) = t.power2Round(d);
+
+    var pk = DilithiumPublicKey(rho, t1);
+    var tr = _h(pk.serialize(), 32);
+
+    return (pk, DilithiumPrivateKey(rho, K, tr, s1, s2, t0));
   }
 
 
@@ -295,7 +313,10 @@ class Dilithium {
   /// Kyber encapsulation takes a public key and a 32-octet seed
   /// and deterministically generates a shared secret and ciphertext
   /// for the public key.
-  DilithiumSignature sign(DilithiumPrivateKey sk, Uint8List message, {bool randomized = false}) {
+  DilithiumSignature sign(DilithiumPrivateKey sk, Uint8List message, {
+    bool randomized = false,
+    StepObserver observer = const NullStepObserver()
+  }) {
     var A = keyGenerator.expandA(sk.rho, isNtt: true);
 
     var mu = _h( _join(sk.tr, message), 64);
@@ -359,7 +380,12 @@ class Dilithium {
   /// encapsulation step.
   /// - If decapsulation was unsuccessful, returns an invalid shared key created
   /// with the given 32-byte z value calculated in the key-generation step.
-  bool verify(DilithiumPublicKey pk, Uint8List message, DilithiumSignature signature) {
+  bool verify(
+      DilithiumPublicKey pk,
+      Uint8List message,
+      DilithiumSignature signature, {
+        StepObserver observer = const NullStepObserver()
+  }) {
 
     var rho = Uint8List.fromList(pk.rho);
     var t1 = pk.t1.copy();
