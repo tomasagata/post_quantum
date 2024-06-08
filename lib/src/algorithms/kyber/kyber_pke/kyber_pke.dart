@@ -123,7 +123,7 @@ class KyberPKE {
       results: {"s": s.copy()}
     );
 
-    var e = keyGenerator.expandS(sigma);
+    var e = keyGenerator.expandE(sigma);
     e.toNtt();
     observer.addStep(
         title: "Generating vector e",
