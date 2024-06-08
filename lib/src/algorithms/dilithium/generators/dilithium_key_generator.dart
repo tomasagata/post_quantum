@@ -6,9 +6,6 @@ import 'package:post_quantum/src/core/factories/polynomial_factory.dart';
 import 'package:post_quantum/src/core/ntt/ntt_helper_dilithium.dart';
 import 'package:hashlib/hashlib.dart';
 
-import '../abstractions/dilithium_private_key.dart';
-import '../abstractions/dilithium_public_key.dart';
-
 import 'package:post_quantum/src/core/polynomials/polynomial_ring.dart';
 import 'package:post_quantum/src/core/polynomials/polynomial_ring_matrix.dart';
 
@@ -217,7 +214,7 @@ class DilithiumKeyGenerator {
   }
 
 
-  (PolynomialMatrix s1, PolynomialMatrix s2) _expandS(Uint8List rhoPrime) {
+  (PolynomialMatrix s1, PolynomialMatrix s2) expandS(Uint8List rhoPrime) {
     List<PolynomialRing> s1Polynomials = [];
     List<PolynomialRing> s2Polynomials = [];
 
@@ -241,29 +238,6 @@ class DilithiumKeyGenerator {
 
 
   // ------------ PUBLIC METHODS ------------
-
-  /// Generates a public and private key for Dilithium from a 32-byte seed.
-  (DilithiumPublicKey pk, DilithiumPrivateKey sk) generateKeys(Uint8List seed) {
-    var seedBytes = _h(seed, 128);
-
-    var rho = seedBytes.sublist(0, 32);       // 32 bytes
-    var rhoPrime = seedBytes.sublist(32, 96); // 64 bytes
-    var K = seedBytes.sublist(96);            // 32 bytes
-
-    var A = expandA(rho, isNtt: true);
-    var (s1, s2) = _expandS(rhoPrime);
-    var s1Hat = s1.copy().toNtt();
-
-    var step1 = A.multiply(s1Hat);
-    var t = step1.fromNtt().plus(s2);
-
-    var (t1, t0) = t.power2Round(d);
-
-    var pk = DilithiumPublicKey(rho, t1);
-    var tr = _h(pk.serialize(), 32);
-
-    return (pk, DilithiumPrivateKey(rho, K, tr, s1, s2, t0));
-  }
 
   PolynomialRing sampleInBall(Uint8List seed) {
     // Create an infinite stream of SHAKE256(seed)
