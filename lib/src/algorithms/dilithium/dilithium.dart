@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:hashlib/random.dart';
 import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_private_key.dart';
 import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_public_key.dart';
 import 'package:post_quantum/src/algorithms/dilithium/abstractions/dilithium_signature.dart';
